@@ -1,0 +1,266 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using UnityEngine;
+
+
+public class DeckTest : MonoBehaviour {
+
+    int[] opt;
+    int optcount = 0;
+
+    List<GameObject> IAoptions = new List<GameObject>();
+
+    public Aventureiro jogadorIA;
+    public Aventureiro jogador;
+    public GameObject[] card;
+
+    public GameObject prefab;
+    public GameObject holder;
+    public GameObject hand;
+    public GameObject fieldQuest;
+    public GameObject fieldSkill;
+    public GameObject fieldItem;
+    public GameObject grimorio;
+    public Text grimoriotxt;
+
+    public static GameObject endscreen;
+    public static GameObject endtext;
+
+    public List<Card> DeckList = new List<Card>();
+    public List<Card> aux = new List<Card>();
+
+    public GameObject ObjectIA;
+    //statisticas
+    public Text quantI, quantQ, quantS;
+
+
+    public void ShuffleList() {
+
+        int r;
+
+        for (int i = 0; i < (DeckList.Count); i++) {
+            aux.Add(DeckList[i]);
+        }
+
+        for (int i = 0; i < DeckList.Count; i++) {
+            r = Random.Range(0, aux.Count);
+            DeckList[i] = aux[r];
+            aux.RemoveAt(r);
+            //Debug.Log(DeckList.Count);
+            //Debug.Log(aux.Count);
+        }
+    }
+
+    public void calcporcemList()
+    {
+        int countI = 0;
+        int countQ = 0;
+        int countS = 0;
+        float porcenI, porcenQ, porcenS;
+        for (int i = 0; i < DeckList.Count; i++)
+        {
+            switch (DeckList[i].type)
+            {
+                case "Quest":
+                    countQ++;
+                    break;
+                case "Item":
+                    countI++;
+                    break;
+                case "Skill":
+                    countS++;
+                    break;
+            }
+        }
+        porcenI = countI * 100 / DeckList.Count;
+        porcenQ = countQ * 100 / DeckList.Count;
+        porcenS = countS * 100 / DeckList.Count;
+
+        quantI.text = porcenI.ToString() + " % de itens";
+        quantQ.text = porcenQ.ToString() + " % de quests";
+        quantS.text = porcenS.ToString() + " % de skills";
+    }
+
+    private void Start()
+    {
+
+        //Decksize = Deckthief.Length;
+        //Deck = new Card[Deckthief.Length];
+
+        //DeckShuffle = new Card[Decksize];
+        //Deckthief = new Card[Decksize];
+        /*for (int i = 0; i < (Decksize-1); i++)
+        {
+            DeckShuffle[i] = Deckthief[i];
+            //DeckList.Add(Deckthief[i]);
+        }*/
+        //Debug.Log(DeckList.Count);
+
+        //for (int i = 0; i < (DeckList.Count); i++) { aux.Add(DeckList[i]); }
+        //int i = DeckList.Count;
+        //i--;
+        //i--;
+        //Debug.Log(i);
+        //começo da IA
+        card = new GameObject[10];
+        opt = new int[10];
+        //StartCoroutine(inicialDraw());
+        //grimoriotxt.text = "Explorar\n(comprar um card)";
+
+        //jogador.grimorio = DeckList;
+    }
+
+    private void Update()
+    {
+        //if (jogador.PA < 2) grimoriotxt.text = "Encerrar Turno";
+    }
+    IEnumerator inicialDraw()
+    {
+        int inihand = 5; //tamanho da mao inicial
+        for (int i = 0; i < inihand; i++)
+        {
+            yield return new WaitForSeconds(0.7f);
+            GameManager.Draw(jogador);
+                //Draw();
+        }
+    }
+    /*
+    public void Explore() {
+        if (jogador.PA >= 2)
+        {
+            jogador.PA -= 2;
+
+            Draw();
+            //Instantiate(prefab).transform.parent = zone.transform;
+            if (jogador.PA < 2)
+                grimoriotxt.text = "Encerrar Turno";
+        }
+        else
+        {
+            //grimoriotxt.text = "E x p l o r a r";
+            GameManager.endturn();//jogador);
+            //if (GameManager.Iaactive == false)
+               // ObjectIA.GetComponent<DeckTest>().StartCoroutine("RoutineIAdo");
+        }
+    }
+
+    public GameObject CreateCard(Card c){
+        GameObject newcard;
+        newcard = Instantiate(prefab);
+        newcard.transform.SetParent(this.transform.parent);
+        newcard.GetComponent<CardDisplay>().card = c;
+
+        return  newcard;
+    }
+    */
+    
+    public void Draw()
+    {
+        
+        GameObject newcard = GameManager.CreateCard(Instantiate(jogador.grimorio[0]),jogador);;
+        jogador.grimorio.Remove(jogador.grimorio[0]);
+
+        newcard.GetComponent<CardDisplay>().card.Controlador = jogador;
+
+        newcard.transform.position = new Vector3(grimorio.transform.position.x, grimorio.transform.position.y);
+        newcard.GetComponent<CardDisplay>().moveto(newcard.GetComponent<CardDisplay>().card.Controlador.hand);
+        
+        //switch (newcard.GetComponent<CardDisplay>().card.type)
+        //{
+        //    case "Quest": newcard.GetComponent<CardDisplay>().field = fieldQuest; break;
+        //    case "Skill": newcard.GetComponent<CardDisplay>().field = fieldSkill; break;
+        //    case "Item": newcard.GetComponent<CardDisplay>().field = fieldItem; break;
+        //}
+        
+        card[optcount] = newcard;
+        optcount++;
+        IAoptions.Add(newcard);
+        if (optcount >= card.Length) optcount = 0;
+    }
+    
+
+    /*
+    public void IAdo()
+    {
+     
+         for (int i = 0; i < opt.Length; i++)
+         {
+             opt[i] = Random.Range(0, 5);
+
+            if (card[i] != null){
+                if (card[i].GetComponent<CardDisplay>().card.type == "Quest") opt[i] += 5;
+                if (card[i].GetComponent<CardDisplay>().card.type == "Skill") opt[i] -= 4;
+            }
+            else{
+                opt[i]-= 3;
+            }
+            //if (card[i] == null)
+         }
+         choice();
+    }*/
+    /*
+    IEnumerator RoutineIAdo()
+    {
+        GameManager.Iaactive = true;
+        while (GameManager.Iaturn == true)
+        {
+            for (int i = 0; i < opt.Length; i++)
+            {
+                opt[i] = Random.Range(0, 5);
+
+                if (card[i] != null){
+                    if (card[i].GetComponent<CardDisplay>().card.type == "Quest") opt[i] += 5;
+                    if (card[i].GetComponent<CardDisplay>().card.type == "Skill") opt[i] += 2;
+                }
+                else{
+                //if (card[i] == null)
+                    opt[i] += 2;
+                }
+            }
+            choice();
+            yield return new WaitForSeconds(1.2f);
+        }
+        GameManager.Iaactive = false;
+    }
+    */
+    /*
+
+    public void choice()
+    {
+        int escolhido=0, maior = 0;
+            for(int i = 0; i < opt.Length; i++) {
+                if (opt[i] > maior){
+                    maior = opt[i];
+                    escolhido = i;
+                }
+            }
+        switch (escolhido)
+        {
+        default: DoCard(escolhido); break;
+        }
+    }
+
+    public void DoCard(int i)
+    {
+        if (card[i] == null) {
+            Explore();
+        }
+        else{
+
+            if (card[i].transform.parent == card[i].GetComponent<CardDisplay>().card.Controlador.hand)
+            {
+            card[i].GetComponent<CardDisplay>().press();
+            }
+            else
+            {
+
+            }
+
+            if(card[i].GetComponent<CardDisplay>().card.type != "Quest" && card[i].GetComponent<CardDisplay>().card.type != "Skill") card[i] = null;
+        }
+        
+    }
+    */
+} 
